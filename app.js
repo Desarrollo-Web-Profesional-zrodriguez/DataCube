@@ -132,7 +132,7 @@
   // ─────────────────────────────────────────────────────────────────────────
   function renderStats() {
     const grid = document.getElementById('statsGrid');
-    grid.innerHTML = '';
+    if (!grid) return;
 
     // Grand total
     const grand = CUBE_DATA.grandTotal();
@@ -291,7 +291,9 @@
   }
 
   function renderTrendChart() {
-    const ctx = document.getElementById('trendChart').getContext('2d');
+    const trendEl = document.getElementById('trendChart');
+    if (!trendEl) return;
+    const ctx = trendEl.getContext('2d');
     const datasets = buildTrendDatasets();
 
     if (trendChart) trendChart.destroy();
@@ -354,30 +356,37 @@
     });
   }
 
-  // Filter buttons
-  document.getElementById('regionFilter').addEventListener('click', e => {
-    const pill = e.target.closest('.filter-pill');
-    if (!pill) return;
-    document.querySelectorAll('#regionFilter .filter-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    activeRegion = pill.dataset.region;
-    renderTrendChart();
-  });
+  // Filter buttons (only attach if elements exist in current HTML)
+  const regionFilterEl = document.getElementById('regionFilter');
+  if (regionFilterEl) {
+    regionFilterEl.addEventListener('click', e => {
+      const pill = e.target.closest('.filter-pill');
+      if (!pill) return;
+      document.querySelectorAll('#regionFilter .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeRegion = pill.dataset.region;
+      renderTrendChart();
+    });
+  }
 
-  document.getElementById('specFilter').addEventListener('click', e => {
-    const pill = e.target.closest('.filter-pill');
-    if (!pill) return;
-    document.querySelectorAll('#specFilter .filter-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    activeSpec = pill.dataset.spec;
-    renderTrendChart();
-  });
+  const specFilterEl = document.getElementById('specFilter');
+  if (specFilterEl) {
+    specFilterEl.addEventListener('click', e => {
+      const pill = e.target.closest('.filter-pill');
+      if (!pill) return;
+      document.querySelectorAll('#specFilter .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeSpec = pill.dataset.spec;
+      renderTrendChart();
+    });
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // 6. HEATMAP
   // ─────────────────────────────────────────────────────────────────────────
   function renderHeatmap() {
     const container = document.getElementById('heatmapContainer');
+    if (!container) return;
     container.innerHTML = '';
 
     // Find global min/max
@@ -452,12 +461,9 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 7. INIT
+  // 7. INIT — renderDataPanel is called at the END of the IIFE (after
+  //           PANEL_CONFIG and all panel builder functions are defined)
   // ─────────────────────────────────────────────────────────────────────────
-  renderTable('2022');
-  renderStats();
-  renderTrendChart();
-  renderHeatmap();
 
   // ─────────────────────────────────────────────────────────────────────────
   // 8. PDF EXPORT MODULE
@@ -856,6 +862,190 @@
       </table>`;
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // 9. DYNAMIC DATA PANEL — screen table for each cube mode
+  // ─────────────────────────────────────────────────────────────────────────
+
+  function buildPanelTable_Base() {
+    return `
+      <div class="year-tabs">
+        ${years.map((y, i) => `<button class="year-tab${i === 0 ? ' active' : ''}" data-year="${y}">${y}</button>`).join('')}
+      </div>
+      <div class="layer-container">
+        <div class="layer-header">
+          <span class="layer-icon">📊</span>
+          <span id="layerTitle">Figura 1a. Capa del cubo – Año 2022</span>
+          <span class="layer-unit">(miles de profesionales TI desempleados)</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="dataTable">
+            <thead><tr>
+              <th class="th-specialty">Especialidad TI</th>
+              ${geos.map(g => `<th>${g}</th>`).join('')}
+              <th class="th-total">Total</th>
+            </tr></thead>
+            <tbody id="tableBody"></tbody>
+            <tfoot id="tableFoot"></tfoot>
+          </table>
+        </div>
+        <div class="sparkline-section">
+          <h4 class="spark-title">Distribución por especialidad (<span id="sparkYear">2022</span>)</h4>
+          <div class="sparklines" id="sparklines"></div>
+        </div>
+      </div>`;
+  }
+
+  function buildPanelTable_Pivot1() {
+    let rows = '';
+    specs.forEach((spec, si) => {
+      const dot = ['#3b82f6','#06b6d4','#8b5cf6','#10b981'][si];
+      const yt = years.map(y => geos.reduce((s, g) => s + CUBE_DATA.get(y, spec, g), 0));
+      const rt = yt.reduce((a, b) => a + b, 0);
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${dot}"></span>${spec}</td>${yt.map(v => `<td class="td-value">${v}</td>`).join('')}<td class="td-total">${rt}</td></tr>`;
+    });
+    const ygt = years.map(y => specs.reduce((s, sp) => s + geos.reduce((ss, g) => ss + CUBE_DATA.get(y, sp, g), 0), 0));
+    const grand = ygt.reduce((a, b) => a + b, 0);
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead><tr><th class="th-specialty">Especialidad TI</th>${years.map(y => `<th>${y}</th>`).join('')}<th class="th-total">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">Total</td>${ygt.map(v => `<td class="td-value td-total">${v}</td>`).join('')}<td class="td-total grand-total">${grand}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  function buildPanelTable_Pivot2() {
+    let rows = '';
+    specs.forEach((spec, si) => {
+      const dot = ['#3b82f6','#06b6d4','#8b5cf6','#10b981'][si];
+      let rt = 0;
+      const cells = geos.map(g => { const v = years.reduce((s, y) => s + CUBE_DATA.get(y, spec, g), 0); rt += v; return `<td class="td-value">${v}</td>`; }).join('');
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${dot}"></span>${spec}</td>${cells}<td class="td-total">${rt}</td></tr>`;
+    });
+    const ct = geos.map(g => specs.reduce((s, sp) => s + years.reduce((ss, y) => ss + CUBE_DATA.get(y, sp, g), 0), 0));
+    const grand = ct.reduce((a, b) => a + b, 0);
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead><tr><th class="th-specialty">Especialidad TI</th>${geos.map(g => `<th>${g}</th>`).join('')}<th class="th-total">Total Especialidad</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">TOTAL REGIONAL</td>${ct.map(v => `<td class="td-value td-total">${v}</td>`).join('')}<td class="td-total grand-total">${grand}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  function buildPanelTable_Rollup() {
+    const cats = [
+      { name: 'Ingeniería y Desarrollo', indices: [0, 3], color: '#3b82f6' },
+      { name: 'Datos y Soporte',         indices: [1, 2], color: '#06b6d4' }
+    ];
+    let rows = '';
+    cats.forEach(cat => {
+      const yt = years.map(y => cat.indices.reduce((s, si) => s + geos.reduce((ss, g) => ss + CUBE_DATA.get(y, specs[si], g), 0), 0));
+      const rt = yt.reduce((a, b) => a + b, 0);
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${cat.color}"></span>${cat.name}</td>${yt.map(v => `<td class="td-value">${v}</td>`).join('')}<td class="td-total">${rt}</td></tr>`;
+    });
+    const ygt = years.map(y => cats.reduce((s, cat) => s + cat.indices.reduce((ss, si) => ss + geos.reduce((sss, g) => sss + CUBE_DATA.get(y, specs[si], g), 0), 0), 0));
+    const grand = ygt.reduce((a, b) => a + b, 0);
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead><tr><th class="th-specialty">Macro-Categoría TI</th>${years.map(y => `<th>${y}</th>`).join('')}<th class="th-total">Total</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">Total Consolidado</td>${ygt.map(v => `<td class="td-value td-total">${v}</td>`).join('')}<td class="td-total grand-total">${grand}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  function buildPanelTable_Drilldown() {
+    let rows = '';
+    specs.forEach((spec, si) => {
+      const dot = ['#3b82f6','#06b6d4','#8b5cf6','#10b981'][si];
+      const s1 = DRILLDOWN_2024[spec]['1er Semestre 2024'];
+      const s2 = DRILLDOWN_2024[spec]['2do Semestre 2024'];
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${dot}"></span>${spec}</td><td class="td-value">${s1}</td><td class="td-value">${s2}</td><td class="td-total">${s1 + s2}</td></tr>`;
+    });
+    const t1 = specs.reduce((s, sp) => s + DRILLDOWN_2024[sp]['1er Semestre 2024'], 0);
+    const t2 = specs.reduce((s, sp) => s + DRILLDOWN_2024[sp]['2do Semestre 2024'], 0);
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead><tr><th class="th-specialty">Especialidad TI</th><th>1er Semestre 2024</th><th>2do Semestre 2024</th><th class="th-total">Total Anual</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">Total</td><td class="td-value td-total">${t1}</td><td class="td-value td-total">${t2}</td><td class="td-total grand-total">${t1 + t2}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  function buildPanelTable_Dice() {
+    const dY = ['2024','2025'], dG = ['CDMX','Jalisco'], dS = ['Desarrollo de Software','Análisis de Datos'];
+    let rows = '';
+    dS.forEach((spec, si) => {
+      const dot = si === 0 ? '#3b82f6' : '#8b5cf6';
+      let cells = '', rt = 0;
+      dY.forEach(y => dG.forEach(g => { const v = CUBE_DATA.get(y, spec, g); rt += v; cells += `<td class="td-value">${v}</td>`; }));
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${dot}"></span>${spec}</td>${cells}<td class="td-total">${rt}</td></tr>`;
+    });
+    let colCells = '', grand = 0;
+    dY.forEach(y => dG.forEach(g => { const ct = dS.reduce((s, sp) => s + CUBE_DATA.get(y, sp, g), 0); grand += ct; colCells += `<td class="td-value td-total">${ct}</td>`; }));
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead>
+        <tr><th class="th-specialty" rowspan="2" style="vertical-align:middle">Especialidad TI</th><th colspan="2" style="text-align:center">Año 2024</th><th colspan="2" style="text-align:center">Año 2025</th><th class="th-total" rowspan="2" style="vertical-align:middle">Total Subcubo</th></tr>
+        <tr><th>CDMX</th><th>Jalisco</th><th>CDMX</th><th>Jalisco</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">TOTAL MARGINAL</td>${colCells}<td class="td-total grand-total">${grand}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  function buildPanelTable_Slice() {
+    let rows = '';
+    specs.forEach((spec, si) => {
+      const dot = ['#3b82f6','#06b6d4','#8b5cf6','#10b981'][si];
+      const val = geos.reduce((s, g) => s + CUBE_DATA.get('2024', spec, g), 0);
+      rows += `<tr><td class="td-specialty"><span class="spec-dot" style="background:${dot}"></span>${spec}</td><td class="td-value">${val}</td></tr>`;
+    });
+    const grand = specs.reduce((s, sp) => s + geos.reduce((ss, g) => ss + CUBE_DATA.get('2024', sp, g), 0), 0);
+    return `<div class="table-wrapper"><table class="data-table">
+      <thead><tr><th class="th-specialty">Especialidad TI</th><th>Desempleados TI — Año 2024 (CDMX + Jalisco + Nuevo León, en miles)</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row"><td class="td-specialty total-label">Total Slice (Año 2024)</td><td class="td-total grand-total">${grand}</td></tr></tfoot>
+    </table></div>`;
+  }
+
+  const PANEL_CONFIG = {
+    base:      { badge: 'Inciso a)',   icon: '◧', label: 'Cubo de Datos Base — Capas Anuales',              title: 'Cubo de Datos Base',                                           desc: `El cubo está definido por tres dimensiones: <strong>Tiempo</strong> (2022–2025), <strong>Geografía</strong> (CDMX, Jalisco, Nuevo León) y <strong>Especialidad TI</strong>. El hecho medido es la cantidad de profesionales TI desempleados <em>(miles de personas)</em>.`,                                                                                                                                                                                                                              buildTable: buildPanelTable_Base      },
+    pivot1:    { badge: 'Inciso b/c)', icon: '⧉', label: 'Pivoteo 1 — Especialidad TI × Año',               title: 'Pivoteo 1 — Especialidad TI vs. Año (Suma de Regiones)',        desc: `El <strong>Pivoteo 1</strong> reorganiza el cubo colocando las especialidades TI en filas y los años en columnas, acumulando los valores de las tres regiones (CDMX + Jalisco + Nuevo León). Permite comparar la evolución temporal del desempleo por perfil profesional. Total: <strong>7,945</strong>.`,                                                                                                                                                                                                    buildTable: buildPanelTable_Pivot1    },
+    pivot2:    { badge: 'Inciso f)',   icon: '⧉', label: 'Cross-Tabulation — Especialidad TI × Geografía',  title: 'Cross-Tabulation (Pivoteo 2) — Especialidad TI × Geografía',   desc: `La <strong>Cross-Tabulation</strong> presenta las especialidades TI (filas) vs. regiones geográficas (columnas), sumando los cuatro años (2022–2025). Incluye totales marginales por especialidad y por región, y el gran total de <strong>7,945</strong>.`,                                                                                                                                                                                                                                                   buildTable: buildPanelTable_Pivot2    },
+    rollup:    { badge: 'Inciso d)',   icon: '⧉', label: 'Roll-Up — Macro-Categorías de TI',                 title: 'Roll-Up sobre Especialidades de TI',                            desc: `La operación <strong>Roll-Up</strong> asciende en la jerarquía de Especialidad TI agrupando en dos macro-categorías: <strong>Ingeniería y Desarrollo</strong> (Software + Redes) y <strong>Datos y Soporte</strong> (Soporte Téc. + Análisis). Total: <strong>7,945</strong>.`,                                                                                                                                                                                                                                buildTable: buildPanelTable_Rollup    },
+    drilldown: { badge: 'Inciso e)',   icon: '⧉', label: 'Drill-Down — Semestres del Año 2024',              title: 'Drill-Down sobre la Dimensión Tiempo',                          desc: `La operación <strong>Drill-Down</strong> desciende del nivel anual al <strong>semestral</strong> en el año 2024, permitiendo detectar estacionalidad intranual y planear ciclos de contratación. Total 2024: <strong>2,115</strong>.`,                                                                                                                                                                                                                                                                            buildTable: buildPanelTable_Drilldown },
+    dice:      { badge: 'Inciso g)',   icon: '⧉', label: 'Dice — Subcubo 2×2×2',                             title: 'Operación Dice (Subcubo de 2×2×2)',                              desc: `La operación <strong>Dice</strong> extrae un subcubo 2×2×2: Tiempo {2024, 2025} × Geografía {CDMX, Jalisco} × Especialidad {Desarrollo de Software, Análisis de Datos}. Se concentra en las especialidades críticas en las dos regiones de mayor volumen laboral. Total subcubo: <strong>1,875</strong>.`,                                                                                                                                                                                                  buildTable: buildPanelTable_Dice      },
+    slice:     { badge: 'Inciso h)',   icon: '⧉', label: 'Slice — Corte para Año 2024',                      title: 'Slice (usando Pivoteo 1)',                                       desc: `La operación <strong>Slice</strong> fija Año = 2024 en la dimensión Tiempo, generando una vista bidimensional que muestra la distribución del desempleo por especialidad TI acumulando los tres estados. Total slice: <strong>2,115</strong>.`,                                                                                                                                                                                                                                                                 buildTable: buildPanelTable_Slice     }
+  };
+
+  function renderDataPanel(mode) {
+    const section = document.getElementById('dynamicDataSection');
+    if (!section) return;
+    const cfg = PANEL_CONFIG[mode] || PANEL_CONFIG.base;
+    section.innerHTML = `
+      <div class="olap-section">
+        <div class="section-label">
+          <span class="section-icon">${cfg.icon}</span>
+          ${cfg.label}
+        </div>
+        <div class="olap-container">
+          <div class="olap-desc-block">
+            <div class="olap-badge">${cfg.badge}</div>
+            <h3 class="olap-title">${cfg.title}</h3>
+            <p class="olap-text">${cfg.desc}</p>
+          </div>
+          <div class="olap-table-block">
+            ${cfg.buildTable()}
+          </div>
+        </div>
+      </div>`;
+    if (mode === 'base') {
+      document.querySelectorAll('.year-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.year-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentYear = btn.dataset.year;
+          renderTable(btn.dataset.year);
+        });
+      });
+      renderTable(currentYear || '2022');
+    }
+  }
+
   /**
    * Captures the canvas and returns a data URL.
    */
@@ -959,6 +1149,7 @@
       if (window.renderOLAPCube) {
         window.renderOLAPCube(cubeTheme, cubeMode);
       }
+      renderDataPanel(cubeMode);
     });
   });
 
@@ -982,5 +1173,10 @@
   document.getElementById('exportModal').addEventListener('click', e => {
     if (e.target === document.getElementById('exportModal')) closeExportModal();
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // INIT — boot the dynamic panel (must run after PANEL_CONFIG is defined)
+  // ─────────────────────────────────────────────────────────────────────────
+  renderDataPanel('base');
 
 })();
