@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cubo de Datos OLAP – Desempleo TI en México</title>
+  <meta name="description" content="Actividad 3 – Cubo de datos multidimensional OLAP: análisis del desempleo de profesionales TI en México (2022–2025) por geografía y especialidad." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-badge">Actividad 3</div>
+      <div class="header-title-group">
+        <h1 class="header-title">Cubo de Datos <span class="accent">OLAP</span></h1>
+        <p class="header-subtitle">Desempleo de Profesionales TI en México • 2022–2025</p>
+      </div>
+      <div class="header-meta">
+        <span class="meta-pill">Tiempo × Geografía × Especialidad TI</span>
+        <button class="btn-export" id="btnOpenExport" title="Generar vista para PDF">
+          <span class="btn-export-icon">⬇</span> Exportar para PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Inciso label -->
+    <section class="inciso-header">
+      <div class="inciso-badge">Inciso a)</div>
+      <h2 class="inciso-title">Cubo de Datos Base</h2>
+      <p class="inciso-desc">
+        El cubo está definido por tres dimensiones: <strong>Tiempo</strong> (2022–2025),
+        <strong>Geografía</strong> (CDMX, Jalisco, Nuevo León) y
+        <strong>Especialidad TI</strong> (Desarrollo de Software, Soporte Técnico,
+        Análisis de Datos, Redes y Telecomunicaciones).
+        El hecho medido es la cantidad de profesionales TI desempleados <em>(miles de personas)</em>.
+      </p>
+    </section>
+
+    <!-- 3D Cube visualization -->
+    <section class="cube-section">
+      <div class="section-label">
+        <span class="section-icon">◈</span>
+        Visualización 3D Interactiva
+      </div>
+      <div class="cube-wrapper">
+        <div class="cube-controls">
+          <button class="ctrl-btn-cube active" data-mode="base" title="Cubo base (Tiempo × Geografía × Especialidad)">Cubo Base (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="pivot1" title="Pivoteo 1: Especialidad TI vs. Año (Acumulado regiones)">Pivoteo 1 (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="pivot2" title="Pivoteo 2: Especialidad TI vs. Estado (Acumulado años)">Pivoteo 2 (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="rollup" title="Roll-Up: Agregación de especialidades a macro-categorías (Suma de regiones)">Roll-Up (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="drilldown" title="Drill-Down: Desglose semestral del año 2024 por especialidad (Suma de regiones)">Drill-Down (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="dice" title="Dice: Subcubo de 2×2×2 (Tiempo {2024,2025} × Geografía {CDMX, Jalisco} × Especialidad {Software, Análisis de Datos})">Dice (3D)</button>
+          <button class="ctrl-btn-cube" data-mode="slice" title="Slice: Corte del cubo fijando Año = 2024 (Especialidad TI vs. Geografía)">Slice (3D)</button>
+        </div>
+        <canvas id="cubeCanvas"></canvas>
+        <!-- Face legend -->
+        <div class="cube-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>Des. Software – Cara frontal (Z₀)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#06b6d4"></span>Soporte Técnico (Z₁)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>Análisis de Datos (Z₂)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span>Redes y Telecom. (Z₃)</div>
+        </div>
+        <div class="cube-face-info">
+          <span class="face-tag face-front">▶ Cara frontal: Desarrollo de Software × Tiempo × Geografía</span>
+          <span class="face-tag face-top">▲ Cara superior: Nuevo León × Tiempo × Especialidad</span>
+          <span class="face-tag face-right">▶ Cara derecha: Año 2025 × Geografía × Especialidad</span>
+        </div>
+        <div class="cube-actions">
+          <button class="btn-capture" id="btnToggleTheme" title="Cambiar tema de color (Claro/Oscuro)">🌓 Cambiar Fondo (Claro/Oscuro)</button>
+          <button class="btn-capture" id="btnCaptureCube">📷 Capturar cubo como imagen PNG</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension Cards -->
+    <section class="dimensions-section">
+      <div class="section-label">
+        <span class="section-icon">⬡</span>
+        Dimensiones del Cubo
+      </div>
+      <div class="dim-cards">
+        <div class="dim-card dim-x">
+          <div class="dim-axis">Eje X</div>
+          <div class="dim-name">Tiempo</div>
+          <div class="dim-values">
+            <span class="dim-val">2022</span>
+            <span class="dim-val">2023</span>
+            <span class="dim-val">2024</span>
+            <span class="dim-val">2025</span>
+          </div>
+        </div>
+        <div class="dim-card dim-y">
+          <div class="dim-axis">Eje Y</div>
+          <div class="dim-name">Geografía</div>
+          <div class="dim-values">
+            <span class="dim-val">CDMX</span>
+            <span class="dim-val">Jalisco</span>
+            <span class="dim-val">Nuevo León</span>
+          </div>
+        </div>
+        <div class="dim-card dim-z">
+          <div class="dim-axis">Eje Z</div>
+          <div class="dim-name">Especialidad TI</div>
+          <div class="dim-values">
+            <span class="dim-val">Desarrollo de Software</span>
+            <span class="dim-val">Soporte Técnico</span>
+            <span class="dim-val">Análisis de Datos</span>
+            <span class="dim-val">Redes y Telecom.</span>
+          </div>
+        </div>
+        <div class="dim-card dim-m">
+          <div class="dim-axis">Medida</div>
+          <div class="dim-name">Profesionales TI Desempleados</div>
+          <div class="dim-values">
+            <span class="dim-val measure-val">Miles de personas</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Year selector tabs -->
+    <section class="layers-section">
+      <div class="section-label">
+        <span class="section-icon">◧</span>
+        Capas Anuales del Cubo
+      </div>
+      <div class="year-tabs">
+        <button class="year-tab active" data-year="2022">2022</button>
+        <button class="year-tab" data-year="2023">2023</button>
+        <button class="year-tab" data-year="2024">2024</button>
+        <button class="year-tab" data-year="2025">2025</button>
+      </div>
+
+      <div class="layer-container">
+        <div class="layer-header">
+          <span class="layer-icon">📊</span>
+          <span id="layerTitle">Figura 1a. Capa del cubo – Año 2022</span>
+          <span class="layer-unit">(miles de profesionales TI desempleados)</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="dataTable">
+            <thead>
+              <tr>
+                <th class="th-specialty">Especialidad TI</th>
+                <th>CDMX</th>
+                <th>Jalisco</th>
+                <th>Nuevo León</th>
+                <th class="th-total">Total</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Filled by JS -->
+            </tbody>
+            <tfoot id="tableFoot">
+              <!-- Filled by JS -->
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Mini bar chart per row -->
+        <div class="sparkline-section">
+          <h4 class="spark-title">Distribución por especialidad (<span id="sparkYear">2022</span>)</h4>
+          <div class="sparklines" id="sparklines"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Summary stats -->
+    <section class="stats-section">
+      <div class="section-label">
+        <span class="section-icon">◉</span>
+        Resumen General del Cubo (2022–2025)
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Time trend chart -->
+    <section class="trend-section">
+      <div class="section-label">
+        <span class="section-icon">◈</span>
+        Tendencia Temporal por Especialidad y Región
+      </div>
+      <div class="trend-controls">
+        <div class="filter-group">
+          <label class="filter-label">Región:</label>
+          <div class="filter-pills" id="regionFilter">
+            <button class="filter-pill active" data-region="all">Todas</button>
+            <button class="filter-pill" data-region="CDMX">CDMX</button>
+            <button class="filter-pill" data-region="Jalisco">Jalisco</button>
+            <button class="filter-pill" data-region="Nuevo León">Nuevo León</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Especialidad:</label>
+          <div class="filter-pills" id="specFilter">
+            <button class="filter-pill active" data-spec="all">Todas</button>
+            <button class="filter-pill" data-spec="Desarrollo de Software">Des. Software</button>
+            <button class="filter-pill" data-spec="Soporte Técnico">Soporte Téc.</button>
+            <button class="filter-pill" data-spec="Análisis de Datos">Análisis Datos</button>
+            <button class="filter-pill" data-spec="Redes y Telecomunicaciones">Redes</button>
+          </div>
+        </div>
+      </div>
+      <div class="trend-chart-wrap">
+        <canvas id="trendChart" height="320"></canvas>
+      </div>
+    </section>
+
+    <!-- Heatmap section -->
+    <section class="heatmap-section">
+      <div class="section-label">
+        <span class="section-icon">▦</span>
+        Mapa de Calor – Todas las Celdas del Cubo
+      </div>
+      <div class="heatmap-container" id="heatmapContainer">
+        <!-- Filled by JS -->
+      </div>
+      <div class="heatmap-legend">
+        <span class="hm-low">Bajo</span>
+        <div class="hm-gradient"></div>
+        <span class="hm-high">Alto</span>
+      </div>
+    </section>
+
+    <!-- OLAP Operations (Roll-Up) -->
+    <section class="olap-section">
+      <div class="section-label">
+        <span class="section-icon">⧉</span>
+        Operación OLAP: Roll-Up (De Detalle a Resumen)
+      </div>
+      <div class="olap-container">
+        <div class="olap-desc-block">
+          <div class="olap-badge">Inciso d)</div>
+          <h3 class="olap-title">Roll-Up sobre Especialidades de TI</h3>
+          <p class="olap-text">
+            La operación <strong>Roll-Up</strong> consiste en ascender en la jerarquía de una dimensión para reducir el nivel de detalle y obtener una vista más consolidada. En este caso, se aplica sobre el <strong>Pivoteo 1</strong> (Especialidad TI × Tiempo), agrupando las cuatro especialidades detalladas en dos grandes <strong>macro-categorías</strong>:
+          </p>
+          <ul class="olap-list">
+            <li><strong>Ingeniería y Desarrollo:</strong> Desarrollo de Software + Redes y Telecomunicaciones</li>
+            <li><strong>Datos y Soporte:</strong> Soporte Técnico + Análisis de Datos</li>
+          </ul>
+          <p class="olap-text">
+            Esta agregación permite a los tomadores de decisiones apreciar tendencias globales sin el ruido del detalle granular.
+          </p>
+        </div>
+        
+        <div class="olap-table-block">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Macro-Categoría TI</th>
+                  <th>2022</th>
+                  <th>2023</th>
+                  <th>2024</th>
+                  <th>2025</th>
+                  <th class="th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#3b82f6"></span>Ingeniería y Desarrollo</td>
+                  <td class="td-value">935</td>
+                  <td class="td-value">1040</td>
+                  <td class="td-value">1215</td>
+                  <td class="td-value">1385</td>
+                  <td class="td-total">4575</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#06b6d4"></span>Datos y Soporte</td>
+                  <td class="td-value">680</td>
+                  <td class="td-value">770</td>
+                  <td class="td-value">900</td>
+                  <td class="td-value">1020</td>
+                  <td class="td-total">3370</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td class="td-specialty total-label">Total Consolidado</td>
+                  <td class="td-total">1615</td>
+                  <td class="td-total">1810</td>
+                  <td class="td-total">2115</td>
+                  <td class="td-total">2405</td>
+                  <td class="td-total grand-total">7945</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OLAP Operations (Drill-Down) -->
+    <section class="olap-section">
+      <div class="section-label">
+        <span class="section-icon">⧉</span>
+        Operación OLAP: Drill-Down (De Resumen a Detalle)
+      </div>
+      <div class="olap-container">
+        <div class="olap-desc-block">
+          <div class="olap-badge">Inciso e)</div>
+          <h3 class="olap-title">Drill-Down sobre la Dimensión Tiempo</h3>
+          <p class="olap-text">
+            La operación <strong>Drill-Down</strong> consiste en descender en la jerarquía de una dimensión para aumentar el nivel de detalle y obtener una vista más granular. En este caso, se aplica sobre el <strong>Pivoteo 1</strong>, descendiendo en la dimensión <strong>Tiempo</strong>, pasando del granulado anual al <strong>granulado semestral</strong> exclusivamente para el año 2024.
+          </p>
+          <p class="olap-text">
+            Esto descompone el total anual de cada especialidad en <strong>1er Semestre</strong> (Enero–Junio) y <strong>2do Semestre</strong> (Julio–Diciembre). Su valor analítico es detectar estacionalidad intranual en el desempleo de TI, lo que permite planear ciclos de contratación.
+          </p>
+        </div>
+        
+        <div class="olap-table-block">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Especialidad TI</th>
+                  <th>1er Semestre 2024</th>
+                  <th>2do Semestre 2024</th>
+                  <th class="th-total">Total Anual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#3b82f6"></span>Desarrollo de Software</td>
+                  <td class="td-value">398</td>
+                  <td class="td-value">447</td>
+                  <td class="td-total">845</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#06b6d4"></span>Soporte Técnico</td>
+                  <td class="td-value">282</td>
+                  <td class="td-value">318</td>
+                  <td class="td-total">600</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#8b5cf6"></span>Análisis de Datos</td>
+                  <td class="td-value">141</td>
+                  <td class="td-value">159</td>
+                  <td class="td-total">300</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#10b981"></span>Redes y Telecomunicaciones</td>
+                  <td class="td-value">174</td>
+                  <td class="td-value">196</td>
+                  <td class="td-total">370</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td class="td-specialty total-label">Total</td>
+                  <td class="td-total">995</td>
+                  <td class="td-total">1120</td>
+                  <td class="td-total grand-total">2115</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+    <!-- OLAP Operations (Cross-Tabulation) -->
+    <section class="olap-section">
+      <div class="section-label">
+        <span class="section-icon">⧉</span>
+        Operación OLAP: Cross-Tabulation (Tabla de Doble Entrada)
+      </div>
+      <div class="olap-container">
+        <div class="olap-desc-block">
+          <div class="olap-badge">Inciso f)</div>
+          <h3 class="olap-title">Cross-Tabulation (Especialidades × Geografía)</h3>
+          <p class="olap-text">
+            La <strong>Cross-Tabulation</strong> (o tabla cruzada) se construye a partir del <strong>Pivoteo 2</strong> (Especialidad TI × Geografía), añadiendo una columna de <strong>Total</strong> (suma horizontal por especialidad en todo México) y una fila de <strong>TOTAL</strong> (suma vertical por región geográfica), incluyendo el gran total general en la celda de intersección.
+          </p>
+          <p class="olap-text">
+            Esta estructura de doble entrada es fundamental para reportes ejecutivos de síntesis ante autoridades, integrando múltiples perspectivas en una sola vista.
+          </p>
+        </div>
+        
+        <div class="olap-table-block">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Especialidad TI</th>
+                  <th>CDMX</th>
+                  <th>Jalisco</th>
+                  <th>Nuevo León</th>
+                  <th class="th-total">Total Especialidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#3b82f6"></span>Desarrollo de Software</td>
+                  <td class="td-value">1540</td>
+                  <td class="td-value">900</td>
+                  <td class="td-value">740</td>
+                  <td class="td-total">3180</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#06b6d4"></span>Soporte Técnico</td>
+                  <td class="td-value">1005</td>
+                  <td class="td-value">665</td>
+                  <td class="td-value">580</td>
+                  <td class="td-total">2250</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#8b5cf6"></span>Análisis de Datos</td>
+                  <td class="td-value">490</td>
+                  <td class="td-value">335</td>
+                  <td class="td-value">295</td>
+                  <td class="td-total">1120</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#10b981"></span>Redes y Telecomunicaciones</td>
+                  <td class="td-value">625</td>
+                  <td class="td-value">415</td>
+                  <td class="td-value">355</td>
+                  <td class="td-total">1395</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td class="td-specialty total-label">TOTAL REGIONAL</td>
+                  <td class="td-total">3660</td>
+                  <td class="td-total">2315</td>
+                  <td class="td-total">1970</td>
+                  <td class="td-total grand-total">7945</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OLAP Operations (Dice) -->
+    <section class="olap-section">
+      <div class="section-label">
+        <span class="section-icon">⧉</span>
+        Operación OLAP: Dice (Subcubo de Datos)
+      </div>
+      <div class="olap-container">
+        <div class="olap-desc-block">
+          <div class="olap-badge">Inciso g)</div>
+          <h3 class="olap-title">Operación Dice (Subcubo de 2×2×2)</h3>
+          <p class="olap-text">
+            La operación <strong>Dice</strong> (o corte del cubo) consiste en seleccionar un subcubo más pequeño a partir del cubo de datos original mediante la especificación de valores para múltiples dimensiones. En esta visualización, extraemos un subcubo de dimensiones:
+          </p>
+          <ul class="olap-list">
+            <li><strong>Tiempo (Eje X):</strong> Años {2024, 2025}</li>
+            <li><strong>Geografía (Eje Y):</strong> Estados {CDMX, Jalisco}</li>
+            <li><strong>Especialidad (Eje Z):</strong> Especialidades {Desarrollo de Software, Análisis de Datos}</li>
+          </ul>
+          <p class="olap-text">
+            Esto reduce el ámbito de análisis para concentrarse únicamente en las especialidades críticas en las dos regiones de mayor volumen laboral durante los últimos dos años.
+          </p>
+        </div>
+        
+        <div class="olap-table-block">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="vertical-align: middle;">Especialidad TI</th>
+                  <th colspan="2" style="text-align: center;">Año 2024</th>
+                  <th colspan="2" style="text-align: center;">Año 2025</th>
+                  <th rowspan="2" class="th-total" style="vertical-align: middle;">Total Subcubo</th>
+                </tr>
+                <tr>
+                  <th>CDMX</th>
+                  <th>Jalisco</th>
+                  <th>CDMX</th>
+                  <th>Jalisco</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#3b82f6"></span>Desarrollo de Software</td>
+                  <td class="td-value">410</td>
+                  <td class="td-value">240</td>
+                  <td class="td-value">460</td>
+                  <td class="td-value">280</td>
+                  <td class="td-total">1390</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#8b5cf6"></span>Análisis de Datos</td>
+                  <td class="td-value">130</td>
+                  <td class="td-value">90</td>
+                  <td class="td-value">155</td>
+                  <td class="td-value">110</td>
+                  <td class="td-total">485</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td class="td-specialty total-label">TOTAL MARGINAL</td>
+                  <td class="td-total">540</td>
+                  <td class="td-total">330</td>
+                  <td class="td-total">615</td>
+                  <td class="td-total">390</td>
+                  <td class="td-total grand-total">1875</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OLAP Operations (Slice) -->
+    <section class="olap-section">
+      <div class="section-label">
+        <span class="section-icon">⧉</span>
+        Operación OLAP: Slice (Corte del Cubo)
+      </div>
+      <div class="olap-container">
+        <div class="olap-desc-block">
+          <div class="olap-badge">Inciso h)</div>
+          <h3 class="olap-title">Slice (usando Pivoteo 1)</h3>
+          <p class="olap-text">
+            La operación <strong>Slice</strong> realiza un corte del cubo fijando un valor concreto en la dimensión Tiempo (Año = 2024), eliminando esa dimensión del análisis y generando una vista bidimensional de menor dimensionalidad. A partir del Pivoteo 1, se extrae únicamente la columna correspondiente al año 2024, mostrando la distribución del desempleo por especialidad TI para ese año en los tres estados combinados. Esta vista simplificada facilita comparaciones rápidas entre perfiles y puede ser presentada de forma independiente en informes anuales de diagnóstico laboral.
+          </p>
+        </div>
+        
+        <div class="olap-table-block">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Especialidad TI</th>
+                  <th>Desempleados TI — Año 2024 (CDMX + Jalisco + Nuevo León, en miles)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#3b82f6"></span>Desarrollo de Software</td>
+                  <td class="td-value">845</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#06b6d4"></span>Soporte Técnico</td>
+                  <td class="td-value">600</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#8b5cf6"></span>Análisis de Datos</td>
+                  <td class="td-value">300</td>
+                </tr>
+                <tr>
+                  <td class="td-specialty"><span class="spec-dot" style="background:#10b981"></span>Redes y Telecomunicaciones</td>
+                  <td class="td-value">370</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td class="td-specialty total-label">Total Slice (Año 2024)</td>
+                  <td class="td-total grand-total">2115</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>Cubo de Datos OLAP • Actividad 3 – Inciso a) • Desempleo Profesionales TI en México 2022–2025</p>
+    <p class="footer-note">Dimensiones: Tiempo × Geografía × Especialidad TI | Medida: Miles de profesionales desempleados</p>
+  </footer>
+
+  <!-- ════════════════════════════════════════════════════════
+       MODAL DE EXPORTACIÓN PARA PDF
+       ════════════════════════════════════════════════════════ -->
+  <div class="export-overlay" id="exportModal" style="display:none">
+    <div class="export-modal">
+
+      <!-- Modal toolbar -->
+      <div class="export-toolbar">
+        <div class="export-toolbar-left">
+          <span class="export-title">📄 Vista para PDF – Inciso a) Cubo de Datos Base</span>
+        </div>
+        <div class="export-toolbar-right">
+          <button class="export-btn primary" id="btnPrint">🖨 Imprimir / Guardar PDF</button>
+          <button class="export-btn" id="btnDownloadImg" style="display:none">⬇ Descargar imagen del cubo</button>
+          <button class="export-btn danger" id="btnCloseModal">✕ Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Contenido que se imprimirá -->
+      <div class="export-content" id="exportContent">
+
+        <!-- Encabezado del documento -->
+        <div class="pdf-header">
+          <div class="pdf-header-top">
+            <div class="pdf-badge">Actividad 3 – Inciso a)</div>
+            <div class="pdf-date" id="pdfDate"></div>
+          </div>
+          <h1 class="pdf-main-title">Cubo de Datos OLAP</h1>
+          <p class="pdf-subtitle">Análisis Multidimensional del Desempleo de Profesionales TI en México</p>
+        </div>
+
+        <!-- Descripción del cubo -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Descripción del Cubo de Datos</h2>
+          <p class="pdf-text">
+            El cubo de datos base está definido por tres dimensiones:
+            <strong>Tiempo</strong> (Años 2022–2025),
+            <strong>Geografía</strong> (CDMX, Jalisco, Nuevo León) y
+            <strong>Especialidad TI</strong> (Desarrollo de Software, Soporte Técnico,
+            Análisis de Datos, Redes y Telecomunicaciones).
+            El hecho medido es la cantidad de profesionales TI desempleados
+            <em>(expresada en miles de personas)</em> para cada celda resultante
+            de la intersección de estas dimensiones.
+          </p>
+
+          <div class="pdf-dim-grid">
+            <div class="pdf-dim-card">
+              <span class="pdf-dim-axis" style="color:#f59e0b">Eje X — Tiempo</span>
+              <div class="pdf-dim-vals">2022 · 2023 · 2024 · 2025</div>
+            </div>
+            <div class="pdf-dim-card">
+              <span class="pdf-dim-axis" style="color:#ec4899">Eje Y — Geografía</span>
+              <div class="pdf-dim-vals">CDMX · Jalisco · Nuevo León</div>
+            </div>
+            <div class="pdf-dim-card">
+              <span class="pdf-dim-axis" style="color:#8b5cf6">Eje Z — Especialidad TI</span>
+              <div class="pdf-dim-vals">Des. Software · Soporte Téc. · Análisis Datos · Redes y Telecom.</div>
+            </div>
+            <div class="pdf-dim-card">
+              <span class="pdf-dim-axis" style="color:#10b981">Medida</span>
+              <div class="pdf-dim-vals">Miles de profesionales TI desempleados</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imagen del cubo 3D -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Figura 1. Cubo de Datos 3D — Modelo Multidimensional</h2>
+          <div class="pdf-cube-img-wrap">
+            <img id="pdfCubeImg" class="pdf-cube-img" src="" alt="Cubo de Datos 3D OLAP" />
+            <p class="pdf-img-caption">
+              Cubo OLAP 3D: Tiempo (X) × Geografía (Y) × Especialidad TI (Z).
+              Cada barra representa la cantidad de profesionales TI desempleados (miles) en la intersección de las tres dimensiones.
+            </p>
+          </div>
+        </div>
+
+        <!-- Las 4 capas anuales -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Capas Anuales del Cubo (Figuras 1a–1d)</h2>
+          <p class="pdf-text">A continuación se presentan las cuatro capas anuales del cubo, donde las filas representan las especialidades TI y las columnas los estados analizados.</p>
+          <div class="pdf-tables-grid" id="pdfTablesGrid">
+            <!-- Generado por JS -->
+          </div>
+        </div>
+
+        <!-- Tabla resumen consolidada (Pivoteo 1) -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Pivoteo 1 — Especialidad TI vs. Año (Acumulado Geografía)</h2>
+          <p class="pdf-text">Suma de las tres regiones geográficas por especialidad TI en cada año.</p>
+          <div id="pdfSummaryTable"></div>
+        </div>
+
+        <!-- Roll-Up: Macro-Categoría TI vs. Año -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Roll-Up (usando Pivoteo 1) — Macro-Categoría TI vs. Años</h2>
+          <p class="pdf-text">Agregación de las especialidades en macro-categorías (Ingeniería y Desarrollo / Datos y Soporte) a lo largo del tiempo.</p>
+          <div id="pdfRollupTable"></div>
+        </div>
+
+        <!-- Drill-Down: Especialidad TI vs. Semestre (2024) -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Drill-Down (usando Pivoteo 1) — Especialidad TI por Semestre (Año 2024)</h2>
+          <p class="pdf-text">Desglose del año 2024 en el primer y segundo semestre para cada especialidad de TI.</p>
+          <div id="pdfDrilldownTable"></div>
+        </div>
+
+        <!-- f) Cross-Tabulation (Pivoteo 2) -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">f) Cross-Tabulation (Pivoteo 2) — Especialidad TI × Estado con Totales Marginales</h2>
+          <p class="pdf-text">Tabla de doble entrada que integra las especialidades TI (filas) y las regiones geográficas (columnas) acumuladas (2022–2025) con sus respectivos totales marginales y el gran total de 7,945.</p>
+          <div id="pdfPivot2Table"></div>
+        </div>
+
+        <!-- g) Dice: Subcubo de Datos -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">g) Dice (Subcubo) — Especialidad TI × Geografía × Tiempo (2024–2025)</h2>
+          <p class="pdf-text">Subcubo de 2×2×2 que extrae los datos para las especialidades Desarrollo de Software y Análisis de Datos en CDMX y Jalisco durante los años 2024 y 2025 con sus respectivos totales marginales y el gran total de 1,875.</p>
+          <div id="pdfDiceTable"></div>
+        </div>
+
+        <!-- h) Slice: Corte del Cubo -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">h) Slice (usando Pivoteo 1) — Especialidad TI para Año 2024</h2>
+          <p class="pdf-text">Corte bidimensional extraído del cubo al fijar el Año = 2024, acumulando las tres regiones geográficas con sus totales correspondientes.</p>
+          <div id="pdfSliceTable"></div>
+        </div>
+
+        <!-- Tabla totales por región -->
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Tabla Consolidada — Total por Región y Año</h2>
+          <p class="pdf-text">Suma de todas las especialidades TI por región geográfica en cada año.</p>
+          <div id="pdfRegionTable"></div>
+        </div>
+
+        <!-- Footer del documento -->
+        <div class="pdf-footer">
+          <p>Cubo de Datos OLAP • Actividad 3 – Inciso a) • Desempleo de Profesionales TI en México 2022–2025</p>
+          <p>Dimensiones: Tiempo × Geografía × Especialidad TI | Medida: Miles de personas desempleadas</p>
+        </div>
+
+      </div><!-- /export-content -->
+    </div><!-- /export-modal -->
+  </div><!-- /export-overlay -->
+
+  <!-- Scripts -->
+  <!-- Three.js removed: cube now uses Canvas 2D renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="data.js?v=1.0.3"></script>
+  <script src="cube3d.js?v=1.0.3"></script>
+  <script src="app.js?v=1.0.3"></script>
+</body>
+</html>
