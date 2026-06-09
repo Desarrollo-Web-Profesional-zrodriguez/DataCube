@@ -554,23 +554,25 @@
     const allGrand = yearGrandTotals.reduce((a, b) => a + b, 0);
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Especialidad TI</th>
-            ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
-            <th class="pdf-th-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total</td>
-            ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
-            <td class="pdf-td-total pdf-grand">${allGrand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Especialidad TI</th>
+              ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
+              <th class="pdf-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total</td>
+              ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
+              <td class="pdf-td-total pdf-grand">${allGrand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -607,23 +609,25 @@
     const allGrand = yearGrandTotals.reduce((a, b) => a + b, 0);
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Macro-Categoría TI</th>
-            ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
-            <th class="pdf-th-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total Consolidado</td>
-            ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
-            <td class="pdf-td-total pdf-grand">${allGrand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Macro-Categoría TI</th>
+              ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
+              <th class="pdf-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total Consolidado</td>
+              ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
+              <td class="pdf-td-total pdf-grand">${allGrand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -650,25 +654,27 @@
     const grand = totSem1 + totSem2;
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Especialidad TI</th>
-            <th class="pdf-th-num">1er Semestre 2024</th>
-            <th class="pdf-th-num">2do Semestre 2024</th>
-            <th class="pdf-th-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total</td>
-            <td class="pdf-td-total">${totSem1}</td>
-            <td class="pdf-td-total">${totSem2}</td>
-            <td class="pdf-td-total pdf-grand">${grand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Especialidad TI</th>
+              <th class="pdf-th-num">1er Semestre 2024</th>
+              <th class="pdf-th-num">2do Semestre 2024</th>
+              <th class="pdf-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total</td>
+              <td class="pdf-td-total">${totSem1}</td>
+              <td class="pdf-td-total">${totSem2}</td>
+              <td class="pdf-td-total pdf-grand">${grand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -696,23 +702,25 @@
     const allGrand = yearGrandTotals.reduce((a, b) => a + b, 0);
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Región (Geografía)</th>
-            ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
-            <th class="pdf-th-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total</td>
-            ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
-            <td class="pdf-td-total pdf-grand">${allGrand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Región (Geografía)</th>
+              ${years.map(y => `<th class="pdf-th-num">${y}</th>`).join('')}
+              <th class="pdf-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total</td>
+              ${yearGrandTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
+              <td class="pdf-td-total pdf-grand">${allGrand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -741,23 +749,25 @@
     const grand = colTotals.reduce((a, b) => a + b, 0);
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Especialidad TI</th>
-            ${geos.map(g => `<th class="pdf-th-num">${g}</th>`).join('')}
-            <th class="pdf-th-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total</td>
-            ${colTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
-            <td class="pdf-td-total pdf-grand">${grand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Especialidad TI</th>
+              ${geos.map(g => `<th class="pdf-th-num">${g}</th>`).join('')}
+              <th class="pdf-th-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total</td>
+              ${colTotals.map(v => `<td class="pdf-td-total">${v}</td>`).join('')}
+              <td class="pdf-td-total pdf-grand">${grand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -801,30 +811,32 @@
     });
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec" rowspan="2" style="vertical-align: middle;">Especialidad TI</th>
-            <th class="pdf-th-num" colspan="2" style="text-align: center;">Año 2024</th>
-            <th class="pdf-th-num" colspan="2" style="text-align: center;">Año 2025</th>
-            <th class="pdf-th-total" rowspan="2" style="vertical-align: middle;">Total</th>
-          </tr>
-          <tr>
-            <th class="pdf-th-num">CDMX</th>
-            <th class="pdf-th-num">Jalisco</th>
-            <th class="pdf-th-num">CDMX</th>
-            <th class="pdf-th-num">Jalisco</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total</td>
-            ${colCells}
-            <td class="pdf-td-total pdf-grand">${grand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec" rowspan="2" style="vertical-align: middle;">Especialidad TI</th>
+              <th class="pdf-th-num" colspan="2" style="text-align: center;">Año 2024</th>
+              <th class="pdf-th-num" colspan="2" style="text-align: center;">Año 2025</th>
+              <th class="pdf-th-total" rowspan="2" style="vertical-align: middle;">Total</th>
+            </tr>
+            <tr>
+              <th class="pdf-th-num">CDMX</th>
+              <th class="pdf-th-num">Jalisco</th>
+              <th class="pdf-th-num">CDMX</th>
+              <th class="pdf-th-num">Jalisco</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total</td>
+              ${colCells}
+              <td class="pdf-td-total pdf-grand">${grand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   /**
@@ -845,21 +857,23 @@
     const grand = specs.reduce((sum, s) => sum + geos.reduce((ss, g) => ss + CUBE_DATA.get('2024', s, g), 0), 0);
 
     return `
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th class="pdf-th-spec">Especialidad TI</th>
-            <th class="pdf-th-num">Desempleados TI — Año 2024 (miles)</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr>
-            <td class="pdf-td-spec pdf-foot-label">Total Slice (Año 2024)</td>
-            <td class="pdf-td-total pdf-grand">${grand}</td>
-          </tr>
-        </tfoot>
-      </table>`;
+      <div class="pdf-table-block">
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th class="pdf-th-spec">Especialidad TI</th>
+              <th class="pdf-th-num">Desempleados TI — Año 2024 (miles)</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td class="pdf-td-spec pdf-foot-label">Total Slice (Año 2024)</td>
+              <td class="pdf-td-total pdf-grand">${grand}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>`;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

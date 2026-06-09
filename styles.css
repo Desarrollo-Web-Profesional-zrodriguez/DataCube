@@ -1504,17 +1504,84 @@ em { color: var(--text-400); font-style: italic; }
 
 /* ── PRINT MEDIA QUERY ────────────────────────────────────────────────── */
 @media print {
-  /* Hide everything except the modal content */
+  /* ── hide everything except the export modal ── */
   body > *:not(.export-overlay) { display: none !important; }
   .export-overlay  { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
-  .export-modal    { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
+  .export-modal    { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; overflow: visible !important; }
   .export-toolbar  { display: none !important; }
-  .export-content  { padding: 24px !important; }
-  .pdf-tables-grid { grid-template-columns: 1fr 1fr !important; }
-  .pdf-cube-img    { max-height: 320px !important; }
+  .export-content  { padding: 20px 28px !important; }
 
+  /* ── page setup ── */
   @page {
     size: A4 portrait;
-    margin: 1.5cm;
+    margin: 1.4cm 1.2cm;
+  }
+
+  /* ── prevent orphaned headings ── */
+  h1, h2, h3, h4,
+  .pdf-section-title,
+  .pdf-table-caption {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* ── allow sections to break naturally between tables ── */
+  .pdf-section {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  /* ── tables: keep thead repeated & never break a row mid-row ── */
+  table          { border-collapse: collapse !important; width: 100% !important; }
+  thead          { display: table-header-group; }   /* repeat header on every page */
+  tfoot          { display: table-footer-group; }
+  tr             { break-inside: avoid; page-break-inside: avoid; }
+  td, th         { break-inside: avoid; page-break-inside: avoid; }
+
+  /* ── pdf-table specific ── */
+  .pdf-table     { font-size: 10px !important; }
+  .pdf-table-block { break-inside: avoid !important; page-break-inside: avoid !important; overflow: visible !important; }
+  .pdf-th-spec,
+  .pdf-th-num,
+  .pdf-th-total  { padding: 5px 7px !important; font-size: 9px !important; }
+  .pdf-td-spec   { padding: 5px 7px !important; font-size: 10px !important; white-space: normal !important; }
+  .pdf-td-num,
+  .pdf-td-total  { padding: 5px 7px !important; font-size: 10px !important; }
+
+  /* ── annual layers grid: flex wrapper to allow pagination ── */
+  .pdf-tables-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 14px !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  .pdf-tables-grid > .pdf-table-block {
+    width: calc(50% - 7px) !important;
+    box-sizing: border-box !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* ── cube image ── */
+  .pdf-cube-img-wrap { break-inside: avoid; page-break-inside: avoid; }
+  .pdf-cube-img      { max-height: 280px !important; }
+
+  /* ── dimension cards ── */
+  .pdf-dim-grid  { grid-template-columns: repeat(2, 1fr) !important; }
+  .pdf-dim-card  { break-inside: avoid; page-break-inside: avoid; }
+
+  /* ── summary / rollup / drilldown / pivot2 / dice / slice tables ── */
+  #pdfSummaryTable,
+  #pdfRollupTable,
+  #pdfDrilldownTable,
+  #pdfPivot2Table,
+  #pdfDiceTable,
+  #pdfSliceTable,
+  #pdfRegionTable {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
   }
 }
+
