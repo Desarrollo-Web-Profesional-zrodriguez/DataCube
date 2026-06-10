@@ -1018,8 +1018,8 @@
 
   const PANEL_CONFIG = {
     base:      { badge: 'Inciso a)',   icon: '◧', label: 'Cubo de Datos Base — Capas Anuales',              title: 'Cubo de Datos Base',                                           desc: `El cubo está definido por tres dimensiones: <strong>Tiempo</strong> (2022–2025), <strong>Geografía</strong> (CDMX, Jalisco, Nuevo León) y <strong>Especialidad TI</strong>. El hecho medido es la cantidad de profesionales TI desempleados <em>(miles de personas)</em>.`,                                                                                                                                                                                                                              buildTable: buildPanelTable_Base      },
-    pivot1:    { badge: 'Inciso b/c)', icon: '⧉', label: 'Pivoteo 1 — Especialidad TI × Año',               title: 'Pivoteo 1 — Especialidad TI vs. Año (Suma de Regiones)',        desc: `El <strong>Pivoteo 1</strong> reorganiza el cubo colocando las especialidades TI en filas y los años en columnas, acumulando los valores de las tres regiones (CDMX + Jalisco + Nuevo León). Permite comparar la evolución temporal del desempleo por perfil profesional. Total: <strong>7,945</strong>.`,                                                                                                                                                                                                    buildTable: buildPanelTable_Pivot1    },
-    pivot2:    { badge: 'Inciso f)',   icon: '⧉', label: 'Cross-Tabulation — Especialidad TI × Geografía',  title: 'Cross-Tabulation (Pivoteo 2) — Especialidad TI × Geografía',   desc: `La <strong>Cross-Tabulation</strong> presenta las especialidades TI (filas) vs. regiones geográficas (columnas), sumando los cuatro años (2022–2025). Incluye totales marginales por especialidad y por región, y el gran total de <strong>7,945</strong>.`,                                                                                                                                                                                                                                                   buildTable: buildPanelTable_Pivot2    },
+    pivot1:    { badge: 'Inciso b/c)', icon: '⧉', label: 'Pivoteo 1 — Especialidad TI × Año',               title: 'Pivoteo 1 — Especialidad TI vs. Año (Suma de Regiones)',        desc: `El <strong>Pivoteo 1</strong> rota el cubo de datos en el espacio 3D colocando las especialidades TI en el eje X, los años en el eje Y y las regiones en el eje Z. La tabla inferior presenta el consolidado bidimensional de especialidades (filas) vs. años (columnas) acumulando las tres regiones. Total: <strong>7,945</strong>.`,                                                                                                                                                                                                    buildTable: buildPanelTable_Pivot1    },
+    pivot2:    { badge: 'Inciso f)',   icon: '⧉', label: 'Cross-Tabulation — Especialidad TI × Geografía',  title: 'Cross-Tabulation (Pivoteo 2) — Especialidad TI × Geografía',   desc: `El <strong>Pivoteo 2</strong> rota el cubo de datos en el espacio 3D colocando las regiones geográficas en el eje X, las especialidades TI en el eje Y y los años en el eje Z. La tabla inferior presenta la cross-tabulation bidimensional de especialidades (filas) vs. regiones (columnas) acumulando los cuatro años con sus totales marginales. Total: <strong>7,945</strong>.`,                                                                                                                                                                                                                                                   buildTable: buildPanelTable_Pivot2    },
     rollup:    { badge: 'Inciso d)',   icon: '⧉', label: 'Roll-Up — Macro-Categorías de TI',                 title: 'Roll-Up sobre Especialidades de TI',                            desc: `La operación <strong>Roll-Up</strong> asciende en la jerarquía de Especialidad TI agrupando en dos macro-categorías: <strong>Ingeniería y Desarrollo</strong> (Software + Redes) y <strong>Datos y Soporte</strong> (Soporte Téc. + Análisis). Total: <strong>7,945</strong>.`,                                                                                                                                                                                                                                buildTable: buildPanelTable_Rollup    },
     drilldown: { badge: 'Inciso e)',   icon: '⧉', label: 'Drill-Down — Semestres del Año 2024',              title: 'Drill-Down sobre la Dimensión Tiempo',                          desc: `La operación <strong>Drill-Down</strong> desciende del nivel anual al <strong>semestral</strong> en el año 2024, permitiendo detectar estacionalidad intranual y planear ciclos de contratación. Total 2024: <strong>2,115</strong>.`,                                                                                                                                                                                                                                                                            buildTable: buildPanelTable_Drilldown },
     dice:      { badge: 'Inciso g)',   icon: '⧉', label: 'Dice — Subcubo 2×2×2',                             title: 'Operación Dice (Subcubo de 2×2×2)',                              desc: `La operación <strong>Dice</strong> extrae un subcubo 2×2×2: Tiempo {2024, 2025} × Geografía {CDMX, Jalisco} × Especialidad {Desarrollo de Software, Análisis de Datos}. Se concentra en las especialidades críticas en las dos regiones de mayor volumen laboral. Total subcubo: <strong>1,875</strong>.`,                                                                                                                                                                                                  buildTable: buildPanelTable_Dice      },
@@ -1115,6 +1115,28 @@
       img.style.display = 'none';
       img.parentElement.innerHTML +=
         '<p style="color:#64748b;font-style:italic;margin-top:8px;">ℹ El cubo 3D se renderiza en tiempo real. Para incluirlo en el PDF, utiliza la herramienta de captura de pantalla de tu sistema operativo (Win+Shift+S).</p>';
+    }
+
+    // Update caption of the 3D cube in the PDF modal dynamically
+    const pdfCaptionEl = document.querySelector('.pdf-img-caption');
+    if (pdfCaptionEl) {
+      let cap;
+      if (cubeMode === 'base') {
+        cap = 'Cubo OLAP 3D Base: Tiempo (X) × Geografía (Y) × Especialidad TI (Z).';
+      } else if (cubeMode === 'pivot1') {
+        cap = 'Cubo OLAP 3D Pivoteo 1 (Rotado): Especialidad TI (X) × Tiempo (Y) × Geografía (Z).';
+      } else if (cubeMode === 'pivot2') {
+        cap = 'Cubo OLAP 3D Pivoteo 2 (Rotado): Geografía (X) × Especialidad TI (Y) × Tiempo (Z).';
+      } else if (cubeMode === 'rollup') {
+        cap = 'Cubo OLAP 3D Roll-Up: Tiempo (X) × Macro-Categoría TI (Y) × Geografía (Z, consolidado).';
+      } else if (cubeMode === 'drilldown') {
+        cap = 'Cubo OLAP 3D Drill-Down: Semestre 2024 (X) × Especialidad TI (Y) × Geografía (Z, consolidado).';
+      } else if (cubeMode === 'dice') {
+        cap = 'Cubo OLAP 3D Dice: Tiempo (X) × Geografía (Y) × Especialidad TI (Z) (Subcubo de 2×2×2).';
+      } else if (cubeMode === 'slice') {
+        cap = 'Cubo OLAP 3D Slice: Tiempo 2024 (X) × Geografía (Y) × Especialidad TI (Z) (Plano único).';
+      }
+      pdfCaptionEl.textContent = cap + ' Cada barra o celda representa el volumen de profesionales TI desempleados (miles de personas).';
     }
 
     // Build tables grid (4 annual layers)

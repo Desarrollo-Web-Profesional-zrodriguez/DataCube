@@ -164,34 +164,114 @@
     const cellTextFront = isLight ? '#0f172a' : '#ffffff';
     const barColor = isLight ? '#1d4ed8' : '#3b82f6';
 
-    const nX_curr = (activeCubeMode === 'base' || activeCubeMode === 'pivot1' || activeCubeMode === 'rollup') ? nX : (activeCubeMode === 'drilldown' || activeCubeMode === 'dice' ? 2 : (activeCubeMode === 'slice' ? 1 : nY)); // years (4) or semestres/years (2) or slice/year 2024 (1) or geos (3)
-    const nY_curr = (activeCubeMode === 'base' || activeCubeMode === 'slice') ? nY : (activeCubeMode === 'rollup' || activeCubeMode === 'dice' ? 2 : nZ); // geos (3) or rollup/dice (2) or specs (4)
-    const nZ_curr = (activeCubeMode === 'base') ? nZ : (activeCubeMode === 'dice' ? 2 : (activeCubeMode === 'slice' ? nZ : 1));  // specs (4) or subcube specs (2) or slice specs (4) or collapsed (1)
+    let nX_curr, nY_curr, nZ_curr;
+    let colorX, colorY, colorZ;
+    let lblX, lblY, lblZ;
 
-    const colorX = (activeCubeMode === 'base' || activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? TIME_C : GEO_C;
-    const colorY = (activeCubeMode === 'base' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? GEO_C : SPEC_AC;
-    const colorZ = (activeCubeMode === 'base' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? SPEC_AC : (activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown' ? GEO_C : TIME_C);
-
-    const lblX = (activeCubeMode === 'base' || activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? (activeCubeMode === 'drilldown' ? 'Semestre (X)' : 'Tiempo (X)') : 'Geografía (X)';
-    const lblY = (activeCubeMode === 'base' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? 'Geografía (Y)' : (activeCubeMode === 'rollup' ? 'Macro-Categoría TI (Y)' : 'Especialidad TI (Y)');
-    const lblZ = (activeCubeMode === 'base' || activeCubeMode === 'dice' || activeCubeMode === 'slice') ? 'Especialidad TI (Z)' : (activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown' ? 'Geografía (Z)' : 'Tiempo (Z)');
+    if (activeCubeMode === 'base') {
+      nX_curr = nX; // 4 (years)
+      nY_curr = nY; // 3 (geos)
+      nZ_curr = nZ; // 4 (specs)
+      
+      colorX = TIME_C;
+      colorY = GEO_C;
+      colorZ = SPEC_AC;
+      
+      lblX = 'Tiempo (X)';
+      lblY = 'Geografía (Y)';
+      lblZ = 'Especialidad TI (Z)';
+    } else if (activeCubeMode === 'pivot1') {
+      // Rotation: X = specialty, Y = year, Z = geography
+      nX_curr = nZ; // 4 (specs)
+      nY_curr = nX; // 4 (years)
+      nZ_curr = nY; // 3 (geos)
+      
+      colorX = SPEC_AC;
+      colorY = TIME_C;
+      colorZ = GEO_C;
+      
+      lblX = 'Especialidad TI (X)';
+      lblY = 'Tiempo (Y)';
+      lblZ = 'Geografía (Z)';
+    } else if (activeCubeMode === 'pivot2') {
+      // Rotation: X = geography, Y = specialty, Z = year
+      nX_curr = nY; // 3 (geos)
+      nY_curr = nZ; // 4 (specs)
+      nZ_curr = nX; // 4 (years)
+      
+      colorX = GEO_C;
+      colorY = SPEC_AC;
+      colorZ = TIME_C;
+      
+      lblX = 'Geografía (X)';
+      lblY = 'Especialidad TI (Y)';
+      lblZ = 'Tiempo (Z)';
+    } else if (activeCubeMode === 'rollup') {
+      nX_curr = nX; // 4 (years)
+      nY_curr = 2;  // 2 (macro-categories)
+      nZ_curr = 1;  // collapsed region
+      
+      colorX = TIME_C;
+      colorY = SPEC_AC;
+      colorZ = GEO_C;
+      
+      lblX = 'Tiempo (X)';
+      lblY = 'Macro-Categoría TI (Y)';
+      lblZ = 'Geografía (Z)';
+    } else if (activeCubeMode === 'drilldown') {
+      nX_curr = 2;  // 2 semestres
+      nY_curr = nZ; // 4 (specs)
+      nZ_curr = 1;  // collapsed region
+      
+      colorX = TIME_C;
+      colorY = SPEC_AC;
+      colorZ = GEO_C;
+      
+      lblX = 'Semestre (X)';
+      lblY = 'Especialidad TI (Y)';
+      lblZ = 'Geografía (Z)';
+    } else if (activeCubeMode === 'dice') {
+      nX_curr = 2;  // 2024, 2025
+      nY_curr = 2;  // CDMX, Jalisco
+      nZ_curr = 2;  // Software, Análisis Datos
+      
+      colorX = TIME_C;
+      colorY = GEO_C;
+      colorZ = SPEC_AC;
+      
+      lblX = 'Tiempo (X)';
+      lblY = 'Geografía (Y)';
+      lblZ = 'Especialidad TI (Z)';
+    } else if (activeCubeMode === 'slice') {
+      nX_curr = 1;  // 2024
+      nY_curr = nY; // 3 (geos)
+      nZ_curr = nZ; // 4 (specs)
+      
+      colorX = TIME_C;
+      colorY = GEO_C;
+      colorZ = SPEC_AC;
+      
+      lblX = 'Tiempo (X)';
+      lblY = 'Geografía (Y)';
+      lblZ = 'Especialidad TI (Z)';
+    }
 
     let frontTagText;
-    if (activeCubeMode === 'base') frontTagText = '▶ ' + specs[0];
-    else if (activeCubeMode === 'pivot1') frontTagText = '▶ Especialidades × Tiempo';
-    else if (activeCubeMode === 'rollup') frontTagText = '▶ Macro-Categorías × Tiempo';
-    else if (activeCubeMode === 'drilldown') frontTagText = '▶ Especialidades × Semestre (2024)';
-    else if (activeCubeMode === 'dice') frontTagText = '▶ ' + specs[0];
-    else if (activeCubeMode === 'slice') frontTagText = '▶ ' + specs[0] + ' (2024)';
-    else frontTagText = '▶ Especialidades × Geografía';
+    if (activeCubeMode === 'base') frontTagText = '▶ Cara frontal: ' + specs[0];
+    else if (activeCubeMode === 'pivot1') frontTagText = '▶ Cara frontal: ' + geos[0];
+    else if (activeCubeMode === 'pivot2') frontTagText = '▶ Cara frontal: ' + years[0];
+    else if (activeCubeMode === 'rollup') frontTagText = '▶ Cara frontal: Ingeniería y Desarrollo';
+    else if (activeCubeMode === 'drilldown') frontTagText = '▶ Cara frontal: Especialidades × Semestre (2024)';
+    else if (activeCubeMode === 'dice') frontTagText = '▶ Cara frontal: ' + specs[0] + ' (2024)';
+    else if (activeCubeMode === 'slice') frontTagText = '▶ Cara frontal: ' + specs[0] + ' (2024)';
 
     let mainTitleText, subTitleText;
     if (activeCubeMode === 'base') {
       mainTitleText = 'CUBO DE DATOS 3D';
-      subTitleText = 'Modelo Multidimensional: Tiempo × Geografía × Especialidad TI';
+      subTitleText = 'Modelo Multidimensional: Tiempo (X) × Geografía (Y) × Especialidad TI (Z)';
     } else if (activeCubeMode === 'pivot1') {
       mainTitleText = 'CUBO DE DATOS 3D – PIVOTEO 1';
-      subTitleText = 'Pivoteo 1: Especialidad TI × Tiempo (Suma de Regiones)';
+      subTitleText = 'Pivoteo 1 (Rotación): Especialidad TI (X) × Tiempo (Y) × Geografía (Z)';
     } else if (activeCubeMode === 'rollup') {
       mainTitleText = 'CUBO DE DATOS 3D – ROLL-UP';
       subTitleText = 'Roll-Up: Macro-Categorías de TI vs. Años (Suma de Regiones)';
@@ -206,7 +286,7 @@
       subTitleText = 'Slice: Especialidades × Geografía para Año 2024 (Eje Tiempo = 2024)';
     } else {
       mainTitleText = 'CUBO DE DATOS 3D – PIVOTEO 2';
-      subTitleText = 'Pivoteo 2: Especialidad TI × Geografía (Suma de Años)';
+      subTitleText = 'Pivoteo 2 (Rotación): Geografía (X) × Especialidad TI (Y) × Tiempo (Z)';
     }
 
     /* ── Layout (Adjusted left ML to 185 and bottom MB to 80 for no overlap) ── */
@@ -219,6 +299,16 @@
       DX = 40;
       DY = 30;
       CH = 65;
+    } else if (activeCubeMode === 'pivot1') {
+      CW = Math.floor((AW * 0.90) / (nX_curr + nZ_curr * 0.53));
+      DX = Math.floor(CW * 0.53);
+      DY = Math.floor(CW * 0.38);
+      CH = Math.floor((AH - nZ_curr * DY) / nY_curr);
+    } else if (activeCubeMode === 'pivot2') {
+      CW = Math.floor((AW * 0.90) / (nX_curr + nZ_curr * 0.45));
+      DX = Math.floor(CW * 0.45);
+      DY = Math.floor(CW * 0.30);
+      CH = Math.floor((AH - nZ_curr * DY) / nY_curr);
     } else {
       CW = Math.floor(AW / (nX_curr + nZ_curr * 0.53));
       DX = Math.floor(CW * 0.53);
@@ -273,6 +363,7 @@
     arrow(origin, { x: ze.x + EXT * 0.65, y: ze.y - EXT * 0.45 }, colorZ, 2);
 
     /* ── 3. RIGHT face (xi=nX) · Año 2025 × Geografía × Especialidad ── */
+    /* ── 3. RIGHT face (xi=nX) · Año 2025 × Geografía × Especialidad ── */
     for (let zi = 0; zi < nZ_curr; zi++) {
       for (let yi = 0; yi < nY_curr; yi++) {
         let val, col;
@@ -280,8 +371,8 @@
           val = CUBE_DATA.get(years[nX - 1], specs[zi], geos[yi]);
           col = SPEC_C[zi];
         } else if (activeCubeMode === 'pivot1') {
-          val = geos.reduce((sum, g) => sum + CUBE_DATA.get(years[nX - 1], specs[yi], g), 0);
-          col = SPEC_C[yi];
+          val = CUBE_DATA.get(years[yi], specs[3], geos[zi]);
+          col = SPEC_C[3];
         } else if (activeCubeMode === 'rollup') {
           const specIndices = (yi === 0) ? [0, 3] : [1, 2];
           val = specIndices.reduce((sumSpec, si) => {
@@ -299,7 +390,7 @@
           val = CUBE_DATA.get('2024', specs[zi], geos[yi]);
           col = SPEC_C[zi];
         } else { // pivot2
-          val = years.reduce((sum, y) => sum + CUBE_DATA.get(y, specs[yi], geos[nX_curr - 1]), 0);
+          val = CUBE_DATA.get(years[zi], specs[yi], geos[2]);
           col = SPEC_C[yi];
         }
 
@@ -307,11 +398,13 @@
         poly(corners, col + '38', col + '85', 0.8);
         const cx = corners.reduce((s, c) => s + c.x, 0) / 4;
         const cy = corners.reduce((s, c) => s + c.y, 0) / 4;
-        ctx.fillStyle = cellTextLight;
-        ctx.font = `bold ${Math.max(8, Math.floor(Math.min(CW, CH) * 0.19))}px 'JetBrains Mono',monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(val, cx, cy);
+        if (nZ_curr > 1) {
+          ctx.fillStyle = cellTextLight;
+          ctx.font = `bold ${Math.max(8, Math.floor(Math.min(CW, CH) * 0.19))}px 'JetBrains Mono',monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(val, cx, cy);
+        }
       }
     }
 
@@ -323,8 +416,8 @@
           val = CUBE_DATA.get(years[xi], specs[zi], geos[nY - 1]);
           col = SPEC_C[zi];
         } else if (activeCubeMode === 'pivot1') {
-          val = geos.reduce((sum, g) => sum + CUBE_DATA.get(years[xi], specs[nY_curr - 1], g), 0);
-          col = SPEC_C[nY_curr - 1];
+          val = CUBE_DATA.get(years[3], specs[xi], geos[zi]);
+          col = SPEC_C[xi];
         } else if (activeCubeMode === 'rollup') {
           // Top face is at y = 2, which is the top of row index 1 (Datos y Soporte, specs 1 and 2)
           val = geos.reduce((sum, g) => sum + CUBE_DATA.get(years[xi], specs[1], g) + CUBE_DATA.get(years[xi], specs[2], g), 0);
@@ -343,19 +436,12 @@
           val = CUBE_DATA.get('2024', specs[zi], geos[2]);
           col = SPEC_C[zi];
         } else { // pivot2
-          val = years.reduce((sum, y) => sum + CUBE_DATA.get(y, specs[nY_curr - 1], geos[xi]), 0);
-          col = SPEC_C[nY_curr - 1];
+          val = CUBE_DATA.get(years[zi], specs[3], geos[xi]);
+          col = SPEC_C[3];
         }
 
         const corners = [p(xi,nY_curr,zi), p(xi+1,nY_curr,zi), p(xi+1,nY_curr,zi+1), p(xi,nY_curr,zi+1)];
         poly(corners, col + '42', col + '90', 0.8);
-        const cx = corners.reduce((s, c) => s + c.x, 0) / 4;
-        const cy = corners.reduce((s, c) => s + c.y, 0) / 4;
-        ctx.fillStyle = cellTextLight;
-        ctx.font = `bold ${Math.max(8, Math.floor(Math.min(CW, CH) * 0.19))}px 'JetBrains Mono',monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(val, cx, cy);
       }
     }
 
@@ -462,11 +548,11 @@
       ctx.fillText(lblX, mid.x, OY + 32);
     }
 
-    // Geografía (Y) — rotated on left (Shifted from OX-28 to OX-110 to avoid overlap)
+    // Geografía (Y) — rotated on left (Shifted to OX-155 to avoid overlap with long member labels)
     {
       const mid = p(0, nY_curr / 2, 0);
       ctx.save();
-      ctx.translate(OX - 110, mid.y);
+      ctx.translate(OX - 155, mid.y);
       ctx.rotate(-Math.PI / 2);
       ctx.fillStyle = colorY;
       ctx.font = `bold 13px 'Inter',sans-serif`;
@@ -497,12 +583,14 @@
     let membersX;
     if (activeCubeMode === 'base') {
       membersX = years;
-    } else if (activeCubeMode === 'pivot1' || activeCubeMode === 'rollup') {
-      membersX = ['2022 (1615)', '2023 (1810)', '2024 (2115)', '2025 (2405)'];
-    } else if (activeCubeMode === 'drilldown') {
-      membersX = ['1er Sem. (995)', '2do Sem. (1120)'];
+    } else if (activeCubeMode === 'pivot1') {
+      membersX = ['Des. Soft. (3180)', 'Soporte Téc. (2250)', 'Análisis Datos (1120)', 'Redes (1395)'];
     } else if (activeCubeMode === 'pivot2') {
       membersX = ['CDMX (3660)', 'Jalisco (2315)', 'Nuevo León (1970)'];
+    } else if (activeCubeMode === 'rollup') {
+      membersX = years;
+    } else if (activeCubeMode === 'drilldown') {
+      membersX = ['1er Sem. (995)', '2do Sem. (1120)'];
     } else if (activeCubeMode === 'dice') {
       membersX = ['2024 (870)', '2025 (1005)'];
     } else if (activeCubeMode === 'slice') {
@@ -525,6 +613,10 @@
     let membersY;
     if (activeCubeMode === 'base') {
       membersY = geos;
+    } else if (activeCubeMode === 'pivot1') {
+      membersY = ['2022 (1615)', '2023 (1810)', '2024 (2115)', '2025 (2405)'];
+    } else if (activeCubeMode === 'pivot2') {
+      membersY = ['Des. Soft. (3180)', 'Soporte Téc. (2250)', 'Análisis Datos (1120)', 'Redes (1395)'];
     } else if (activeCubeMode === 'rollup') {
       membersY = ['Ing. y Des. (4575)', 'Datos y Soporte (3370)'];
     } else if (activeCubeMode === 'drilldown') {
@@ -533,13 +625,6 @@
         'Soporte Téc. (600)',
         'Análisis Datos (300)',
         'Redes (370)'
-      ];
-    } else if (activeCubeMode === 'pivot1' || activeCubeMode === 'pivot2') {
-      membersY = [
-        'Des. Software (3180)',
-        'Soporte Téc. (2250)',
-        'Análisis Datos (1120)',
-        'Redes (1395)'
       ];
     } else if (activeCubeMode === 'dice') {
       membersY = ['CDMX (1155)', 'Jalisco (720)'];
@@ -565,10 +650,12 @@
     let membersZ;
     if (activeCubeMode === 'base') {
       membersZ = specs;
-    } else if (activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown') {
-      membersZ = ['Suma Regiones'];
+    } else if (activeCubeMode === 'pivot1') {
+      membersZ = ['CDMX (3660)', 'Jalisco (2315)', 'Nuevo León (1970)'];
     } else if (activeCubeMode === 'pivot2') {
-      membersZ = ['Suma Años'];
+      membersZ = ['2022 (1615)', '2023 (1810)', '2024 (2115)', '2025 (2405)'];
+    } else if (activeCubeMode === 'rollup' || activeCubeMode === 'drilldown') {
+      membersZ = ['Suma Regiones'];
     } else if (activeCubeMode === 'dice') {
       membersZ = ['Des. Software (1390)', 'Análisis Datos (485)'];
     } else if (activeCubeMode === 'slice') {
@@ -581,7 +668,9 @@
     membersZ.forEach((m, zi) => {
       const pt = p(nX_curr, 0, zi + 0.5);
       const col = (activeCubeMode === 'base') ? SPEC_C[zi] 
-                : (activeCubeMode === 'dice' ? (zi === 0 ? SPEC_C[0] : SPEC_C[2]) : (activeCubeMode === 'slice' ? SPEC_C[zi] : colorZ));
+                : (activeCubeMode === 'dice' ? (zi === 0 ? SPEC_C[0] : SPEC_C[2]) 
+                : (activeCubeMode === 'slice' ? SPEC_C[zi] 
+                : (activeCubeMode === 'pivot1' ? ['#f59e0b', '#ec4899', '#6366f1'][zi] : colorZ)));
       connector(pt, specRightX, pt.y, col);
       ctx.fillStyle = col;
       ctx.font = SPEC_FONT_SM;
@@ -611,9 +700,20 @@
       ctx.fillStyle = isLight ? '#047857' : `rgba(16,185,129,${TAG_ALPHA})`;
       ctx.font = `italic 10px 'Inter',sans-serif`;
       ctx.textAlign = 'left';
-      const topTagText = (activeCubeMode === 'base' || activeCubeMode === 'slice') ? '▲ ' + geos[nY - 1] 
-                       : (activeCubeMode === 'pivot1' || activeCubeMode === 'rollup' || activeCubeMode === 'drilldown' ? '▲ Suma Regiones' 
-                       : (activeCubeMode === 'dice' ? '▲ ' + geos[1] : '▲ Suma Años'));
+      let topTagText;
+      if (activeCubeMode === 'base' || activeCubeMode === 'slice') {
+        topTagText = '▲ ' + geos[nY - 1];
+      } else if (activeCubeMode === 'pivot1') {
+        topTagText = '▲ ' + years[nX - 1];
+      } else if (activeCubeMode === 'pivot2') {
+        topTagText = '▲ ' + SPEC_SHORT[nY_curr - 1];
+      } else if (activeCubeMode === 'rollup') {
+        topTagText = '▲ Datos y Soporte';
+      } else if (activeCubeMode === 'drilldown') {
+        topTagText = '▲ Redes y Telecom.';
+      } else if (activeCubeMode === 'dice') {
+        topTagText = '▲ ' + geos[1];
+      }
       if (activeCubeMode === 'slice') {
         ctx.textBaseline = 'bottom';
         ctx.fillText(topTagText, tp.x + 4, tp.y - 8);
@@ -631,10 +731,20 @@
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       const tagY = (activeCubeMode === 'slice') ? rp.y - 20 : rp.y - 4;
-      const rightTagText = (activeCubeMode === 'base' || activeCubeMode === 'pivot1' || activeCubeMode === 'rollup') ? '▶ ' + years[nX - 1] 
-                         : (activeCubeMode === 'drilldown' ? '▶ 2do Sem. 2024' 
-                         : (activeCubeMode === 'dice' ? '▶ ' + years[nX - 1] 
-                         : (activeCubeMode === 'slice' ? '▶ 2024' : '▶ ' + geos[nY - 1])));
+      let rightTagText;
+      if (activeCubeMode === 'base' || activeCubeMode === 'rollup') {
+        rightTagText = '▶ ' + years[nX - 1];
+      } else if (activeCubeMode === 'pivot1') {
+        rightTagText = '▶ ' + SPEC_SHORT[3];
+      } else if (activeCubeMode === 'pivot2') {
+        rightTagText = '▶ ' + geos[2];
+      } else if (activeCubeMode === 'drilldown') {
+        rightTagText = '▶ 2do Sem. 2024';
+      } else if (activeCubeMode === 'dice') {
+        rightTagText = '▶ 2025';
+      } else if (activeCubeMode === 'slice') {
+        rightTagText = '▶ 2024';
+      }
       ctx.fillText(rightTagText, rp.x + 4, tagY);
     }
 
@@ -649,6 +759,45 @@
       ctx.fillStyle = isLight ? '#475569' : 'rgba(180,210,255,0.75)';
       ctx.font = `12px 'Inter',sans-serif`;
       ctx.fillText(subTitleText, midX, 34);
+    }
+
+    // Update face tags in HTML DOM dynamically if elements exist
+    const frontTagEl = (typeof document.querySelector === 'function') ? document.querySelector('.face-front') : null;
+    const topTagEl = (typeof document.querySelector === 'function') ? document.querySelector('.face-top') : null;
+    const rightTagEl = (typeof document.querySelector === 'function') ? document.querySelector('.face-right') : null;
+    
+    if (frontTagEl) {
+      let txt;
+      if (activeCubeMode === 'base') txt = '▶ Cara frontal: Desarrollo de Software (Especialidad) × Tiempo × Geografía';
+      else if (activeCubeMode === 'pivot1') txt = '▶ Cara frontal: CDMX (Geografía) × Especialidad × Tiempo';
+      else if (activeCubeMode === 'pivot2') txt = '▶ Cara frontal: Año 2022 (Tiempo) × Geografía × Especialidad';
+      else if (activeCubeMode === 'rollup') txt = '▶ Cara frontal: Ingeniería y Desarrollo (Macro-Categoría) × Tiempo × Geografía';
+      else if (activeCubeMode === 'drilldown') txt = '▶ Cara frontal: Especialidades × Semestres (Año 2024)';
+      else if (activeCubeMode === 'dice') txt = '▶ Cara frontal: Desarrollo de Software (Especialidad) × Tiempo × Geografía (Subcubo)';
+      else if (activeCubeMode === 'slice') txt = '▶ Cara frontal: Desarrollo de Software (Especialidad) × Geografía (Año 2024)';
+      frontTagEl.textContent = txt;
+    }
+    if (topTagEl) {
+      let txt;
+      if (activeCubeMode === 'base') txt = '▲ Cara superior: Nuevo León (Geografía) × Tiempo × Especialidad';
+      else if (activeCubeMode === 'pivot1') txt = '▲ Cara superior: Año 2025 (Tiempo) × Especialidad × Geografía';
+      else if (activeCubeMode === 'pivot2') txt = '▲ Cara superior: Redes y Telecomunicaciones (Especialidad) × Geografía × Tiempo';
+      else if (activeCubeMode === 'rollup') txt = '▲ Cara superior: Datos y Soporte (Macro-Categoría) × Tiempo × Geografía';
+      else if (activeCubeMode === 'drilldown') txt = '▲ Cara superior: Redes y Telecomunicaciones (Especialidad) × Semestres (Año 2024)';
+      else if (activeCubeMode === 'dice') txt = '▲ Cara superior: Jalisco (Geografía) × Tiempo × Especialidad (Subcubo)';
+      else if (activeCubeMode === 'slice') txt = '▲ Cara superior: Nuevo León (Geografía) × Especialidad (Año 2024)';
+      topTagEl.textContent = txt;
+    }
+    if (rightTagEl) {
+      let txt;
+      if (activeCubeMode === 'base') txt = '▶ Cara derecha: Año 2025 (Tiempo) × Geografía × Especialidad';
+      else if (activeCubeMode === 'pivot1') txt = '▶ Cara derecha: Redes y Telecomunicaciones (Especialidad) × Tiempo × Geografía';
+      else if (activeCubeMode === 'pivot2') txt = '▶ Cara derecha: Nuevo León (Geografía) × Especialidad × Tiempo';
+      else if (activeCubeMode === 'rollup') txt = '▶ Cara derecha: Año 2025 (Tiempo) × Macro-Categoría × Geografía';
+      else if (activeCubeMode === 'drilldown') txt = '▶ Cara derecha: 2do Semestre 2024 × Especialidad × Geografía';
+      else if (activeCubeMode === 'dice') txt = '▶ Cara derecha: Año 2025 (Tiempo) × Geografía × Especialidad (Subcubo)';
+      else if (activeCubeMode === 'slice') txt = '▶ Cara derecha: Año 2024 × Geografía × Especialidad';
+      rightTagEl.textContent = txt;
     }
   }
 
